@@ -7,7 +7,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  ghapi-exercise:
+  generate-report:
     if: (github.event.issue.pull_request != null) && contains(github.event.comment.body, '/wandb')
     runs-on: ubuntu-latest
     steps:        
@@ -18,7 +18,7 @@ jobs:
     - name: install dependencies
       run: |
         pip install ghapi wandb
-         pip install --upgrade chardet, urllib3
+        pip install --upgrade request
     - name: Parse value from the command
       id: get-runid-value
       shell: python
