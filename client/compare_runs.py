@@ -1,7 +1,6 @@
 import os, wandb
 import wandb.apis.reports as wr
 
-# os.environ["WANDB_API_KEY"] = "6e1578bd8f61576f19de63b61db1ee5e2435f810"
 assert os.getenv('WANDB_API_KEY'), 'You must set the WANDB_API_KEY environment variable'
 
 def get_baseline_run(entity='max-deep', project='titanic_survived', tag='baseline'):
