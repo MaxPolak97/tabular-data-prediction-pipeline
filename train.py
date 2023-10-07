@@ -18,8 +18,8 @@ from wandb.xgboost import WandbCallback
 import xgboost as xgb
 import pickle
 
-WANDB_PROJECT = 'titanic_survived' # os.environ['WANDB_PROJECT']
-WANDB_DATASET = 'titanic-dataset:latest' # os.environ['WANDB_DATASET']
+WANDB_PROJECT = os.environ['WANDB_PROJECT'] # 'titanic_survived' 
+WANDB_DATASET = os.environ['WANDB_DATASET'] # 'titanic-dataset:latest'
 
 target = 'Survived'
 
@@ -120,11 +120,11 @@ def train():
       # Get the current date and time
       date = datetime.now().strftime("%Y_%m_%d")
 
-      with open('model', 'wb') as f:
+      with open('model.pkl', 'wb') as f:
         pickle.dump(pipeline, f)
 
       model_artifact = wandb.Artifact(f'retrained_model_{date}', type='model')
-      model_artifact.add_file(f'model.pkl')
+      model_artifact.add_file('model.pkl')
       run.log_artifact(model_artifact)
 
 if __name__ == "__main__":
