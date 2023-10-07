@@ -173,10 +173,11 @@ cython_debug/
 # Built Visual Studio Code Extensions
 *.vsix
 
-# Dataset
+# Dataset and model
 **/titanic/
 **/dataset/
 **/split-dataset/
+**/models/
 
 # wandb
 **/wandb/

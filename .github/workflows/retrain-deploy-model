@@ -1,0 +1,27 @@
+name: Retrain & Deploy Model
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.10.7  # Choose the Python version you need
+      
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt  # If you have a requirements.txt file
+      
+      - name: Retrain model
+        run: python train.py
+        env: 
+          WANDB_PROJECT: "titanic_survived"
+          WANDB_DATASET: "titanic-dataset:latest"
+          WANDB_API_KEY: "${{ secrets.WANDB_API_KEY }}" 
