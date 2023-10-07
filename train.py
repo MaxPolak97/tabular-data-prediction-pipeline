@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 import pandas as pd
 import numpy as np
+from datetime import datetime
 
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
@@ -17,8 +18,8 @@ from wandb.xgboost import WandbCallback
 import xgboost as xgb
 import pickle
 
-WANDB_PROJECT = os.environ['WANDB_PROJECT']
-WANDB_DATASET = os.environ['WANDB_DATASET']
+WANDB_PROJECT = 'titanic_survived' # os.environ['WANDB_PROJECT']
+WANDB_DATASET = 'titanic-dataset:latest' # os.environ['WANDB_DATASET']
 
 target = 'Survived'
 
@@ -28,7 +29,7 @@ params = {'max_depth': 6
   , 'colsample_bytree': 1 
   , 'n_estimators': 100 
   , 'learning_rate': 0.3 
-  , 'early_stopping_rounds': 40 
+  , 'early_stopping_rounds': None 
   , 'random_state': 42
   , 'tree_method': 'hist'
   , 'device': 'cuda' 
@@ -36,7 +37,7 @@ params = {'max_depth': 6
 
 
 def train():
-  with wandb.init(project=WANDB_PROJECT, job_type='train-model') as run:
+  with wandb.init(project=WANDB_PROJECT, job_type='retrain-model') as run:
       
       # Create Dataset directory
       root_dir = Path(sys.path[0])
@@ -46,10 +47,9 @@ def train():
       # Download latest dataset version
       data_art = run.use_artifact(WANDB_DATASET)
       data_dir = data_art.download(data_dir)
-      dataset_dir = pd.read_csv(f'{data_dir}/train.csv')
       
       # Read and split data into training and validation 
-      df_data = pd.read_csv(dataset_dir)
+      df_data = pd.read_csv(f'{data_dir}/train.csv')
 
       df_train, df_val = train_test_split(df_data, 
                                         test_size=0.2,
@@ -58,13 +58,13 @@ def train():
       
 
       # Feature selection to drop irrelevant features
-      drop_list = ['PassengerId', 'Name', 'Ticket', 'Cabin', 'Embarked'] 
+      drop_list = [target, 'PassengerId', 'Name', 'Ticket', 'Cabin', 'Embarked'] 
 
-      X_train = df_train.drop(columns=drop_list + target)
+      X_train = df_train.drop(columns=drop_list)
       y_train = df_train[target]
 
       y_val = df_val[target]
-      X_val = df_val.drop(columns=drop_list + target)
+      X_val = df_val.drop(columns=drop_list)
 
       # Create preprocessor
       preprocessor = ColumnTransformer(
@@ -112,31 +112,20 @@ def train():
       run.summary["val_ks_2samp"] = ks_stat
       run.summary["val_ks_pval"] = ks_pval
 
-      val_metrics_table = wandb.Table(data=[
-        ["Metric", "Value"],
-        ["val_acc_0.5", wandb.run.summary["val_acc_0.5"]],
-        [f"val_acc_best_trh", wandb.run.summary[f"val_acc_best_trh"]],
-        [f"val_precision", wandb.run.summary[f"val_precision"]],
-        [f"val_recall", wandb.run.summary[f"val_recall"]],
-        [f"val_f1score", wandb.run.summary[f"val_f1score"]],
-        ["val_auc", wandb.run.summary["val_auc"]],
-        ["val_matthews_corrcoef", wandb.run.summary["val_matthews_corrcoef"]],
-        ["val_cohen_kappa_score", wandb.run.summary["val_cohen_kappa_score"]],
-        ["val_brier_loss", wandb.run.summary["val_brier_loss"]],
-        ["val_log_loss", wandb.run.summary["val_log_loss"]],
-        ["val_ks_2samp", wandb.run.summary["val_ks_2samp"]],
-        ["val_ks_pval", wandb.run.summary["val_ks_pval"]]
-      ])
-
-      run.log({"val_metrics_table": val_metrics_table})
-
       run.log({"confusion_matrix" :wandb.sklearn.plot_confusion_matrix(y_val, 
                                                                    y_val_preds_binary, ['Dead','Survived'])})
       
-      with open('model.pkl', 'wb') as f:
+      # Save model pipeline
+
+      # Get the current date and time
+      date = datetime.now().strftime("%Y_%m_%d")
+
+      with open('model', 'wb') as f:
         pickle.dump(pipeline, f)
 
-      wandb.save('model.pkl.pkl')
+      model_artifact = wandb.Artifact(f'retrained_model_{date}', type='model')
+      model_artifact.add_file(f'model.pkl')
+      run.log_artifact(model_artifact)
 
 if __name__ == "__main__":
    train()
