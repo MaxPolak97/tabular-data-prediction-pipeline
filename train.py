@@ -138,6 +138,7 @@ def train():
 
       wandb.save('model.pkl.pkl')
 
-
+if __name__ == "__main__":
+   train()
     
 
