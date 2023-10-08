@@ -23,12 +23,12 @@ WANDB_DATASET = 'titanic-dataset:latest' #os.environ['WANDB_DATASET'] # 'titanic
 
 target = 'Survived'
 
-params = {'max_depth': 6 
-  , 'min_child_weight': 1  
-  , 'subsample': 1 
+params = {'max_depth': 8 
+  , 'min_child_weight': 10  
+  , 'subsample': 0.784
   , 'colsample_bytree': 1 
-  , 'n_estimators': 100 
-  , 'learning_rate': 0.3 
+  , 'n_estimators': 120 
+  , 'learning_rate': 0.6209 
   , 'early_stopping_rounds': None 
   , 'random_state': 42
   , 'tree_method': 'hist'
