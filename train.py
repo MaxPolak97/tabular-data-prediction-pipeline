@@ -5,7 +5,6 @@ import sys
 import pandas as pd
 import numpy as np
 from datetime import datetime
-from IPython.display import HTML
 
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
@@ -18,7 +17,6 @@ from scipy.stats import ks_2samp
 from wandb.xgboost import WandbCallback
 import xgboost as xgb
 import pickle
-from evaluate import compare_metrics
 
 WANDB_PROJECT = 'titanic_survived' # os.environ['WANDB_PROJECT'] # 'titanic_survived' 
 WANDB_DATASET = 'titanic-dataset:latest' #os.environ['WANDB_DATASET'] # 'titanic-dataset:latest'
